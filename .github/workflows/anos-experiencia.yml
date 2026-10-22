@@ -1,0 +1,32 @@
+name: Actualizar años de experiencia
+
+on:
+  schedule:
+    - cron: "0 6 1 1 *" # cada 1 de enero
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Calcular años desde 2019
+        run: |
+          anos=$(( $(date -u +%Y) - 2019 ))
+          sed -i -E "s|<!--anos-->[0-9]+<!--/anos-->|<!--anos-->${anos}<!--/anos-->|" README.md
+          echo "Años de experiencia: ${anos}"
+
+      - name: Commit si cambió
+        run: |
+          if git diff --quiet; then
+            echo "Sin cambios"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "Actualiza años de experiencia"
+          git push
